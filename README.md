@@ -1,7 +1,19 @@
 # AutoValue: Extension Utilities
 
-TODO
+A set of utilities to make writing extensions for Google's [AutoValue][auto] and reduce boilerplate code.
 
+- **Property**: A nicer way to work with the properties of the annotated class
+- **AutoValueUtil**: Convenience methods for the code you have to generate.
+- **ElementUtil**: Convenience methods around `Element`
+
+## Shading
+
+This project depends on Google's [Auto Common Utilities][common] and recommends to shade it:
+> Users of auto-common are urged to use shade or jarjar (or something similar) in packaging their processors
+> so that conflicting versions of this library do not adversely interact with each other.
+[Source][shade]
+
+It is recommended that you shade this library together with Auto Common in your extension.
 
 ## Download
 
@@ -45,4 +57,6 @@ limitations under the License.
 
 
  [auto]: https://github.com/google/auto
+ [common]: https://github.com/google/auto/tree/master/common
+ [shade]: https://github.com/google/auto/tree/master/common#processor-resilience
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
