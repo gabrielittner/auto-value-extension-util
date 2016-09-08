@@ -51,43 +51,6 @@ public class ElementUtilTest {
     }
 
     @Test
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public void methodTests() {
-        TypeElement element = elements.getTypeElement(MethodTestClass.class.getCanonicalName());
-
-        // method a
-        assertThat(ElementUtil.getAbstractMethod(elements, element, null, VOID)).isNull();
-        assertThat(ElementUtil.hasAbstractMethod(elements, element, null, VOID)).isFalse();
-        assertThat(ElementUtil.getStaticMethod(element, null, VOID)).isNull();
-        assertThat(ElementUtil.hasStaticMethod(element, null, VOID)).isFalse();
-
-        // method b
-        assertThat(ElementUtil.getAbstractMethod(elements, element, STRING, VOID)).isNotNull();
-        assertThat(ElementUtil.hasAbstractMethod(elements, element, STRING, VOID)).isTrue();
-        assertThat(ElementUtil.getStaticMethod(element, STRING, VOID)).isNull();
-        assertThat(ElementUtil.hasStaticMethod(element, STRING, VOID)).isFalse();
-
-        // method c
-        assertThat(ElementUtil.getAbstractMethod(elements, element, null, INT)).isNull();
-        assertThat(ElementUtil.hasAbstractMethod(elements, element, null, INT)).isFalse();
-        assertThat(ElementUtil.getStaticMethod(element, null, INT)).isNotNull();
-        assertThat(ElementUtil.hasStaticMethod(element, null, INT)).isTrue();
-
-        // method d
-        assertThat(ElementUtil.getAbstractMethod(elements, element, STRING, INT)).isNotNull();
-        assertThat(ElementUtil.hasAbstractMethod(elements, element, STRING, INT)).isTrue();
-        assertThat(ElementUtil.getStaticMethod(element, STRING, INT)).isNull();
-        assertThat(ElementUtil.hasStaticMethod(element, STRING, INT)).isFalse();
-
-        // method e
-        assertThat(ElementUtil.getAbstractMethod(elements, element, INT, STRING)).isNull();
-        assertThat(ElementUtil.hasAbstractMethod(elements, element, INT, STRING)).isFalse();
-        assertThat(ElementUtil.getStaticMethod(element, INT, STRING)).isNotNull();
-        assertThat(ElementUtil.hasStaticMethod(element, INT, STRING)).isTrue();
-    }
-
-    @Test
     public void matchingMethodTests() {
         TypeElement element = elements.getTypeElement(MethodTestClass.class.getCanonicalName());
         Set<ExecutableElement> methods = getLocalAndInheritedMethods(element, elements);

@@ -23,59 +23,6 @@ import static com.google.auto.common.MoreElements.getLocalAndInheritedMethods;
 public final class ElementUtil {
 
     /**
-     * Returns true if {@code cls} has a static method and has {@code returns} as return type. If
-     * {@code takes} is not null the method has to have exactly one parameter with that type,
-     * otherwise zero parameters.
-     *
-     * @deprecated use {@link #getMatchingStaticMethod(TypeElement, TypeName, TypeName...)}
-     */
-    public static boolean hasStaticMethod(TypeElement cls, TypeName takes, TypeName returns) {
-        return getMatchingStaticMethod(cls, returns, toArray(takes)).isPresent();
-    }
-
-    /**
-     * Returns a method of {@code cls} that is static and has {@code returns} as return type. If
-     * {@code takes} is not null the method has to have exactly one parameter with that type,
-     * otherwise zero parameters. Returns null if such a method doesn't exist.
-     *
-     * @deprecated use {@link #getMatchingStaticMethod(TypeElement, TypeName, TypeName...)}
-     */
-    public static ExecutableElement getStaticMethod(
-            TypeElement cls, TypeName takes, TypeName returns) {
-        return getMatchingStaticMethod(cls, returns, toArray(takes)).orNull();
-    }
-
-    /**
-     * Returns true if {@code cls} has an abstract method and has {@code returns} as return type. If
-     * {@code takes} is not null the method has to have exactly one parameter with that type,
-     * otherwise zero parameters.
-     *
-     * @deprecated use {@link #getMatchingAbstractMethod(Set, TypeName, TypeName...)}
-     */
-    public static boolean hasAbstractMethod(
-            Elements elementUtils, TypeElement cls, TypeName takes, TypeName returns) {
-        Set<ExecutableElement> methods = getLocalAndInheritedMethods(cls, elementUtils);
-        return getMatchingAbstractMethod(methods, returns, toArray(takes)).isPresent();
-    }
-
-    /**
-     * Returns a method of {@code cls} that is abstract and has {@code returns} as return type. If
-     * {@code takes} is not null the method has to have exactly one parameter with that type,
-     * otherwise zero parameters. Returns null if such a method doesn't exist.
-     *
-     * @deprecated use {@link #getMatchingAbstractMethod(Set, TypeName, TypeName...)}
-     */
-    public static ExecutableElement getAbstractMethod(
-            Elements elementUtils, TypeElement cls, TypeName takes, TypeName returns) {
-        Set<ExecutableElement> methods = getLocalAndInheritedMethods(cls, elementUtils);
-        return getMatchingAbstractMethod(methods, returns, toArray(takes)).orNull();
-    }
-
-    private static TypeName[] toArray(TypeName typeName) {
-        return typeName != null ? new TypeName[] {typeName} : new TypeName[0];
-    }
-
-    /**
      * Returns a method of {@code cls} that is static, has {@code returns} as return type and the
      * number and types of parameters match {@code takes}. Returns null if such a method doesn't
      * exist.
