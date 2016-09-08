@@ -4,12 +4,14 @@ import com.gabrielittner.auto.value.util.extensions.CallConstructorExtension;
 import com.gabrielittner.auto.value.util.extensions.ErrorExtension;
 import com.gabrielittner.auto.value.util.extensions.AbstractExtension;
 import com.gabrielittner.auto.value.util.extensions.FinalExtension;
+import com.google.auto.value.extension.AutoValueExtension;
+import com.google.auto.value.processor.AutoValueProcessor;
 import com.google.testing.compile.JavaFileObjects;
+import java.util.Arrays;
 import java.util.Collections;
 import javax.tools.JavaFileObject;
 import org.junit.Test;
 
-import static com.google.auto.value.processor.ExtensionTestHelper.newProcessor;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 
@@ -207,5 +209,9 @@ public class AutoValueCursorExtensionTest {
                 .failsToCompile()
                 .withErrorContaining(
                         "Error generating AutoValue_Test extending $AutoValue_Test with isFinal = true");
+    }
+
+    private AutoValueProcessor newProcessor(AutoValueExtension... extension) {
+        return new AutoValueProcessor(Arrays.asList(extension));
     }
 }
