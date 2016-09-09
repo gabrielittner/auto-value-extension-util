@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.3.0 *(2016-09-09)*
+----------------------------
+
+#### Supports: AutoValue 1.3
+
+- it's now recommended to shade this library together with Google's Auto Common (see README)
+- AutoValue 1.3 support
+- remove deprecated methods in `ElementUtil`
+
 Version 0.2.1 *(2016-06-02)*
 ----------------------------
 

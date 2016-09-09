@@ -20,7 +20,7 @@ It is recommended that you shade this library together with Auto Common in your 
 Add a Gradle dependency:
 
 ```groovy
-compile 'com.gabrielittner.auto.value:auto-value-extension-util:0.2.1'
+compile 'com.gabrielittner.auto.value:auto-value-extension-util:0.3.0'
 ```
 
 or Maven:
@@ -28,7 +28,7 @@ or Maven:
 <dependency>
   <groupId>com.gabrielittner.auto.value</groupId>
   <artifactId>auto-value-extension-util</artifactId>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <scope>compile</scope>
 </dependency>
 ```
