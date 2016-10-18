@@ -306,89 +306,86 @@ public class ElementUtilTest {
         throw new IllegalArgumentException("Element with name '" + name + "' not found");
     }
 
-    private void resolvedGenericTypeTest(Class cls, String methodName) {
-        String className = cls.getCanonicalName();
-        TypeElement thing = elements.getTypeElement(className);
-        ImmutableSet<ExecutableElement> methods = getLocalAndInheritedMethods(thing, elements);
-        for (ExecutableElement method : methods) {
-            if (method.getSimpleName().toString().equals(methodName)) {
-                TypeMirror returns = ElementUtil.getResolvedReturnType(types, thing, method);
-                assertThat(returns.toString()).isEqualTo(className);
-            }
-        }
+    private void resolvedGenericTypeTest(Class cls, String methodName, Class expected) {
+        TypeElement classElement = elements.getTypeElement(cls.getCanonicalName());
+        ExecutableElement method = findMethodWithName(classElement, methodName);
+
+        TypeMirror returns = ElementUtil.getResolvedReturnType(types, classElement, method);
+        assertThat(returns.toString()).isEqualTo(expected.getCanonicalName());
     }
 
-
-
-    abstract class Foo extends BaseFoo<Foo> {}
+    private ExecutableElement findMethodWithName(TypeElement element, String methodName) {
+        ImmutableSet<ExecutableElement> methods = getLocalAndInheritedMethods(element, elements);
+        for (ExecutableElement method : methods) {
+            if (method.getSimpleName().toString().equals(methodName)) {
+                return method;
+            }
+        }
+        throw new AssertionError("Method not found.");
+    }
 
     abstract class BaseFoo<T extends BaseFoo<T>> {
         abstract T name1();
     }
 
+    abstract class Foo extends BaseFoo<Foo> {}
+
     @Test
     public void testResolvingGenericTypeSimple() {
-        resolvedGenericTypeTest(Foo.class, "name1");
+        resolvedGenericTypeTest(Foo.class, "name1", Foo.class);
     }
-
-
-
-    abstract class Thing extends BaseThing<Thing> {}
-
-    abstract class BaseThing<P extends BaseThing<P>> extends BasementThing<P, P> {}
-
-    abstract class BasementThing<K extends V, V extends BasementThing<K, V>>
-            extends FoundationThing<K> {}
 
     abstract class FoundationThing<T extends FoundationThing<T>> {
         abstract T name2();
     }
 
+    abstract class BasementThing<K extends V, V extends BasementThing<K, V>>
+            extends FoundationThing<K> {}
+
+    abstract class BaseThing<P extends BaseThing<P>> extends BasementThing<P, P> {}
+
+    abstract class Thing extends BaseThing<Thing> {}
+
     @Test
     public void testResolvingGenericTypeComplex() {
-        resolvedGenericTypeTest(Thing.class, "name2");
+        resolvedGenericTypeTest(Thing.class, "name2", Thing.class);
     }
 
-
-
-    abstract class FooIf implements BaseFooIf<FooIf> {}
-
-    interface BaseFooIf<T extends BaseFooIf<T>> {
+    interface BaseFooInterface<T extends BaseFooInterface<T>> {
         T name3();
     }
 
+    abstract class FooInterface implements BaseFooInterface<FooInterface> {}
+
     @Test
     public void testResolvingGenericTypeInterfaceSimple() {
-        resolvedGenericTypeTest(FooIf.class, "name3");
+        resolvedGenericTypeTest(FooInterface.class, "name3", FooInterface.class);
     }
 
-
-
-    abstract class ThingIf implements BaseThingIf<ThingIf> {}
-
-    interface BaseThingIf<P extends BaseThingIf<P>> extends BasementThingIf<P, P> {}
-
-    interface BasementThingIf<K extends V, V extends BasementThingIf<K, V>>
-            extends FoundationThingIf<K> {}
-
-    interface FoundationThingIf<T extends FoundationThingIf<T>> {
+    interface FoundationThingInterface<T extends FoundationThingInterface<T>> {
         T name4();
     }
 
+    interface BasementThingInterface<K extends V, V extends BasementThingInterface<K, V>>
+            extends FoundationThingInterface<K> {}
+
+    interface BaseThingInterface<P extends BaseThingInterface<P>>
+            extends BasementThingInterface<P, P> {}
+
+    abstract class ThingInterface implements BaseThingInterface<ThingInterface> {}
+
     @Test
     public void testResolvingGenericTypeInterfaceComplex() {
-        resolvedGenericTypeTest(ThingIf.class, "name3");
+        resolvedGenericTypeTest(ThingInterface.class, "name4", ThingInterface.class);
     }
 
-
-
     abstract class ThingCombo extends BaseThing<ThingCombo>
-            implements BaseFooIf<ThingCombo>, BaseThingIf<ThingCombo> {}
+            implements BaseFooInterface<ThingCombo>, BaseThingInterface<ThingCombo> {}
 
     @Test
     public void testResolvingGenericTypeCombined() {
-        resolvedGenericTypeTest(ThingCombo.class, "name2");
-        resolvedGenericTypeTest(ThingCombo.class, "name3");
-        resolvedGenericTypeTest(ThingCombo.class, "name4");
+        resolvedGenericTypeTest(ThingCombo.class, "name2", ThingCombo.class);
+        resolvedGenericTypeTest(ThingCombo.class, "name3", ThingCombo.class);
+        resolvedGenericTypeTest(ThingCombo.class, "name4", ThingCombo.class);
     }
 }
