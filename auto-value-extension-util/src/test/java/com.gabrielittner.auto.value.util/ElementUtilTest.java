@@ -306,7 +306,7 @@ public class ElementUtilTest {
         throw new IllegalArgumentException("Element with name '" + name + "' not found");
     }
 
-    private void resolvedGenericTypeTest(Class cls, String methodName, Class expected) {
+    private void assertThatMethodReturns(Class cls, String methodName, Class expected) {
         TypeElement classElement = elements.getTypeElement(cls.getCanonicalName());
         ExecutableElement method = findMethodWithName(classElement, methodName);
 
@@ -332,7 +332,7 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericType() {
-        resolvedGenericTypeTest(Bar.class, "name1", String.class);
+        assertThatMethodReturns(Bar.class, "name1", String.class);
     }
 
     abstract class BaseBarBounds<T extends BaseBar> {
@@ -345,9 +345,9 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericTypeBounds() {
-        resolvedGenericTypeTest(BaseBarBounds.class, "name1", BaseBar.class);
-        resolvedGenericTypeTest(BarBounds.class, "name1", Bar.class);
-        resolvedGenericTypeTest(BarMoreSpecificBounds.class, "name1", Bar.class);
+        assertThatMethodReturns(BaseBarBounds.class, "name1", BaseBar.class);
+        assertThatMethodReturns(BarBounds.class, "name1", Bar.class);
+        assertThatMethodReturns(BarMoreSpecificBounds.class, "name1", Bar.class);
     }
 
     abstract class BaseFoo<T extends BaseFoo<T>> {
@@ -358,7 +358,7 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericTypeSimple() {
-        resolvedGenericTypeTest(Foo.class, "name1", Foo.class);
+        assertThatMethodReturns(Foo.class, "name1", Foo.class);
     }
 
     abstract class FoundationThing<T extends FoundationThing<T>> {
@@ -374,7 +374,7 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericTypeComplex() {
-        resolvedGenericTypeTest(Thing.class, "name2", Thing.class);
+        assertThatMethodReturns(Thing.class, "name2", Thing.class);
     }
 
     interface BaseFooInterface<T extends BaseFooInterface<T>> {
@@ -385,7 +385,7 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericTypeInterfaceSimple() {
-        resolvedGenericTypeTest(FooInterface.class, "name3", FooInterface.class);
+        assertThatMethodReturns(FooInterface.class, "name3", FooInterface.class);
     }
 
     interface FoundationThingInterface<T extends FoundationThingInterface<T>> {
@@ -402,7 +402,7 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericTypeInterfaceComplex() {
-        resolvedGenericTypeTest(ThingInterface.class, "name4", ThingInterface.class);
+        assertThatMethodReturns(ThingInterface.class, "name4", ThingInterface.class);
     }
 
     abstract class ThingCombo extends BaseThing<ThingCombo>
@@ -410,8 +410,8 @@ public class ElementUtilTest {
 
     @Test
     public void testResolvingGenericTypeCombined() {
-        resolvedGenericTypeTest(ThingCombo.class, "name2", ThingCombo.class);
-        resolvedGenericTypeTest(ThingCombo.class, "name3", ThingCombo.class);
-        resolvedGenericTypeTest(ThingCombo.class, "name4", ThingCombo.class);
+        assertThatMethodReturns(ThingCombo.class, "name2", ThingCombo.class);
+        assertThatMethodReturns(ThingCombo.class, "name3", ThingCombo.class);
+        assertThatMethodReturns(ThingCombo.class, "name4", ThingCombo.class);
     }
 }
