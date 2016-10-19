@@ -324,6 +324,32 @@ public class ElementUtilTest {
         throw new AssertionError("Method not found.");
     }
 
+    abstract class BaseBar<T> {
+        abstract T name1();
+    }
+
+    abstract class Bar extends BaseBar<String> {}
+
+    @Test
+    public void testResolvingGenericType() {
+        resolvedGenericTypeTest(Bar.class, "name1", String.class);
+    }
+
+    abstract class BaseBarBounds<T extends BaseBar> {
+        abstract T name1();
+    }
+
+    abstract class BarBounds extends BaseBarBounds<Bar> {}
+
+    abstract class BarMoreSpecificBounds<T extends Bar> extends BaseBarBounds<T> {}
+
+    @Test
+    public void testResolvingGenericTypeBounds() {
+        resolvedGenericTypeTest(BaseBarBounds.class, "name1", BaseBar.class);
+        resolvedGenericTypeTest(BarBounds.class, "name1", Bar.class);
+        resolvedGenericTypeTest(BarMoreSpecificBounds.class, "name1", Bar.class);
+    }
+
     abstract class BaseFoo<T extends BaseFoo<T>> {
         abstract T name1();
     }

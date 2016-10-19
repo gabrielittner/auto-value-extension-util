@@ -8,7 +8,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -138,12 +139,18 @@ public final class ElementUtil {
         return null;
     }
 
-    static TypeMirror getResolvedReturnType(
+    /**
+     * TODO
+     */
+    public static TypeMirror getResolvedReturnType(
             Types typeUtils, TypeElement type, ExecutableElement method) {
         TypeMirror returnType = method.getReturnType();
         if (returnType.getKind() == TypeKind.TYPEVAR) {
             List<HierarchyElement> hierarchy =
                     getHierarchyUntilClassWithElement(typeUtils, type, method);
+            if (hierarchy == null) {
+                throw new IllegalArgumentException("Couldn't find method " + method);
+            }
             return resolveGenericType(hierarchy, returnType);
         }
         return returnType;
@@ -152,13 +159,9 @@ public final class ElementUtil {
     private static List<HierarchyElement> getHierarchyUntilClassWithElement(
             Types typeUtils, TypeElement start, Element target) {
 
-        for (TypeMirror superType : typeUtils.directSupertypes(start.asType())) {
-            TypeElement superTypeElement = (TypeElement) typeUtils.asElement(superType);
-            if (superTypeElement.getEnclosedElements().contains(target)) {
-                HierarchyElement base = new HierarchyElement(superTypeElement, null);
-                HierarchyElement current = new HierarchyElement(start, superType);
-                return new ArrayList<>(Arrays.asList(base, current));
-            }
+        if (start.getEnclosedElements().contains(target)) {
+            HierarchyElement base = new HierarchyElement(start, null);
+            return new ArrayList<>(Collections.singleton(base));
         }
 
         for (TypeMirror superType : typeUtils.directSupertypes(start.asType())) {
@@ -176,16 +179,30 @@ public final class ElementUtil {
     private static TypeMirror resolveGenericType(
             List<HierarchyElement> hierarchy, TypeMirror type) {
 
+        if (hierarchy.size() == 1) {
+            if (type.getKind() != TypeKind.TYPEVAR) {
+                return type;
+            } else {
+                return ((TypeVariable) type).getUpperBound();
+            }
+        }
+
         int position = indexOfParameter(hierarchy.get(0).element, type.toString());
+        TypeMirror bound = null;
         for (int i = 1; i < hierarchy.size(); i++) {
             HierarchyElement hierarchyElement = hierarchy.get(i);
 
             type = ((DeclaredType) hierarchyElement.superType).getTypeArguments().get(position);
             if (type.getKind() != TypeKind.TYPEVAR) {
                 return type;
+            } else {
+                bound = ((TypeVariable) type).getUpperBound();
             }
 
             position = indexOfParameter(hierarchyElement.element, type.toString());
+        }
+        if (bound != null) {
+            return bound;
         }
         throw new IllegalArgumentException("Couldn't resolve type " + type);
     }
