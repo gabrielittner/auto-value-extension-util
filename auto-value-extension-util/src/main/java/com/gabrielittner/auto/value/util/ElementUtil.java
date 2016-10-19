@@ -140,7 +140,8 @@ public final class ElementUtil {
     }
 
     /**
-     * TODO
+     * Returns the return type of the given {@code method} inside {@code type}. For generic
+     * return types it will either return the upper bound or the resolved type.
      */
     public static TypeMirror getResolvedReturnType(
             Types typeUtils, TypeElement type, ExecutableElement method) {
@@ -204,7 +205,7 @@ public final class ElementUtil {
         if (bound != null) {
             return bound;
         }
-        throw new IllegalArgumentException("Couldn't resolve type " + type);
+        throw new AssertionError("Bound can't be null.");
     }
 
     private static class HierarchyElement {
