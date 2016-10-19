@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableSet;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -15,10 +17,14 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
-
-import static com.google.auto.common.MoreElements.getLocalAndInheritedMethods;
+import javax.lang.model.util.Types;
 
 public final class ElementUtil {
 
@@ -131,6 +137,95 @@ public final class ElementUtil {
             return AnnotationMirrors.getAnnotationValue(annotation.get(), key).getValue();
         }
         return null;
+    }
+
+    /**
+     * Returns the return type of the given {@code method} inside {@code type}. For generic
+     * return types it will either return the upper bound or the resolved type.
+     */
+    public static TypeMirror getResolvedReturnType(
+            Types typeUtils, TypeElement type, ExecutableElement method) {
+        TypeMirror returnType = method.getReturnType();
+        if (returnType.getKind() == TypeKind.TYPEVAR) {
+            List<HierarchyElement> hierarchy =
+                    getHierarchyUntilClassWithElement(typeUtils, type, method);
+            if (hierarchy == null) {
+                throw new IllegalArgumentException("Couldn't find method " + method);
+            }
+            return resolveGenericType(hierarchy, returnType);
+        }
+        return returnType;
+    }
+
+    private static List<HierarchyElement> getHierarchyUntilClassWithElement(
+            Types typeUtils, TypeElement start, Element target) {
+
+        if (start.getEnclosedElements().contains(target)) {
+            HierarchyElement base = new HierarchyElement(start, null);
+            return new ArrayList<>(Collections.singleton(base));
+        }
+
+        for (TypeMirror superType : typeUtils.directSupertypes(start.asType())) {
+            TypeElement superTypeElement = (TypeElement) typeUtils.asElement(superType);
+            List<HierarchyElement> result =
+                    getHierarchyUntilClassWithElement(typeUtils, superTypeElement, target);
+            if (result != null) {
+                result.add(new HierarchyElement(start, superType));
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private static TypeMirror resolveGenericType(
+            List<HierarchyElement> hierarchy, TypeMirror type) {
+
+        if (hierarchy.size() == 1) {
+            if (type.getKind() != TypeKind.TYPEVAR) {
+                return type;
+            } else {
+                return ((TypeVariable) type).getUpperBound();
+            }
+        }
+
+        int position = indexOfParameter(hierarchy.get(0).element, type.toString());
+        TypeMirror bound = null;
+        for (int i = 1; i < hierarchy.size(); i++) {
+            HierarchyElement hierarchyElement = hierarchy.get(i);
+
+            type = ((DeclaredType) hierarchyElement.superType).getTypeArguments().get(position);
+            if (type.getKind() != TypeKind.TYPEVAR) {
+                return type;
+            } else {
+                bound = ((TypeVariable) type).getUpperBound();
+            }
+
+            position = indexOfParameter(hierarchyElement.element, type.toString());
+        }
+        if (bound != null) {
+            return bound;
+        }
+        throw new AssertionError("Bound can't be null.");
+    }
+
+    private static class HierarchyElement {
+        private final TypeElement element;
+        private final TypeMirror superType;
+
+        private HierarchyElement(TypeElement element, TypeMirror superType) {
+            this.element = element;
+            this.superType = superType;
+        }
+    }
+
+    private static int indexOfParameter(TypeElement element, String param) {
+        List<? extends TypeParameterElement> params = element.getTypeParameters();
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i).getSimpleName().toString().equals(param)) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Param " + param + "not not found in list");
     }
 
     private ElementUtil() {

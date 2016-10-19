@@ -1,5 +1,6 @@
 package com.gabrielittner.auto.value.util;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.testing.compile.CompilationRule;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
@@ -11,7 +12,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,16 +28,18 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 public class ElementUtilTest {
-    
+
     private static final TypeName STRING = TypeName.get(String.class);
 
     @Rule public CompilationRule compilationRule = new CompilationRule();
 
     private Elements elements;
+    private Types types;
 
     @Before
     public void setUp() {
         this.elements = compilationRule.getElements();
+        this.types = compilationRule.getTypes();
     }
 
     @SuppressWarnings("unused")
@@ -299,5 +304,114 @@ public class ElementUtilTest {
             }
         }
         throw new IllegalArgumentException("Element with name '" + name + "' not found");
+    }
+
+    private void assertThatMethodReturns(Class cls, String methodName, Class expected) {
+        TypeElement classElement = elements.getTypeElement(cls.getCanonicalName());
+        ExecutableElement method = findMethodWithName(classElement, methodName);
+
+        TypeMirror returns = ElementUtil.getResolvedReturnType(types, classElement, method);
+        assertThat(returns.toString()).isEqualTo(expected.getCanonicalName());
+    }
+
+    private ExecutableElement findMethodWithName(TypeElement element, String methodName) {
+        ImmutableSet<ExecutableElement> methods = getLocalAndInheritedMethods(element, elements);
+        for (ExecutableElement method : methods) {
+            if (method.getSimpleName().toString().equals(methodName)) {
+                return method;
+            }
+        }
+        throw new AssertionError("Method not found.");
+    }
+
+    abstract class BaseBar<T> {
+        abstract T name1();
+    }
+
+    abstract class Bar extends BaseBar<String> {}
+
+    @Test
+    public void testResolvingGenericType() {
+        assertThatMethodReturns(Bar.class, "name1", String.class);
+    }
+
+    abstract class BaseBarBounds<T extends BaseBar> {
+        abstract T name1();
+    }
+
+    abstract class BarBounds extends BaseBarBounds<Bar> {}
+
+    abstract class BarMoreSpecificBounds<T extends Bar> extends BaseBarBounds<T> {}
+
+    @Test
+    public void testResolvingGenericTypeBounds() {
+        assertThatMethodReturns(BaseBarBounds.class, "name1", BaseBar.class);
+        assertThatMethodReturns(BarBounds.class, "name1", Bar.class);
+        assertThatMethodReturns(BarMoreSpecificBounds.class, "name1", Bar.class);
+    }
+
+    abstract class BaseFoo<T extends BaseFoo<T>> {
+        abstract T name1();
+    }
+
+    abstract class Foo extends BaseFoo<Foo> {}
+
+    @Test
+    public void testResolvingGenericTypeSimple() {
+        assertThatMethodReturns(Foo.class, "name1", Foo.class);
+    }
+
+    abstract class FoundationThing<T extends FoundationThing<T>> {
+        abstract T name2();
+    }
+
+    abstract class BasementThing<K extends V, V extends BasementThing<K, V>>
+            extends FoundationThing<K> {}
+
+    abstract class BaseThing<P extends BaseThing<P>> extends BasementThing<P, P> {}
+
+    abstract class Thing extends BaseThing<Thing> {}
+
+    @Test
+    public void testResolvingGenericTypeComplex() {
+        assertThatMethodReturns(Thing.class, "name2", Thing.class);
+    }
+
+    interface BaseFooInterface<T extends BaseFooInterface<T>> {
+        T name3();
+    }
+
+    abstract class FooInterface implements BaseFooInterface<FooInterface> {}
+
+    @Test
+    public void testResolvingGenericTypeInterfaceSimple() {
+        assertThatMethodReturns(FooInterface.class, "name3", FooInterface.class);
+    }
+
+    interface FoundationThingInterface<T extends FoundationThingInterface<T>> {
+        T name4();
+    }
+
+    interface BasementThingInterface<K extends V, V extends BasementThingInterface<K, V>>
+            extends FoundationThingInterface<K> {}
+
+    interface BaseThingInterface<P extends BaseThingInterface<P>>
+            extends BasementThingInterface<P, P> {}
+
+    abstract class ThingInterface implements BaseThingInterface<ThingInterface> {}
+
+    @Test
+    public void testResolvingGenericTypeInterfaceComplex() {
+        assertThatMethodReturns(ThingInterface.class, "name4", ThingInterface.class);
+    }
+
+    abstract class ThingCombo extends BaseThing<ThingCombo>
+            implements BaseFooInterface<ThingCombo>, BaseThingInterface<ThingCombo> {}
+
+    @Test
+    public void testResolvingGenericTypeCombined() {
+        assertThatMethodReturns(ThingCombo.class, "name2", ThingCombo.class);
+        assertThatMethodReturns(ThingCombo.class, "name3", ThingCombo.class);
+        assertThatMethodReturns(ThingCombo.class, "name4", ThingCombo.class);
     }
 }
