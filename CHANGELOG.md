@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+Version 0.4.0 *(2018-11-04)*
+----------------------------
+
+#### Supports: AutoValue 1.3 - 1.6
+
+- replace `AutoValueUtil.getAutoValueClassClassName()` with `AutoValueUtil.getAutoValueClassTypeName()` which supports type parameters
+- added `ElementUtil.getResolvedReturnType()` which tries to resolve a generic `TypeMirror` to it's actual type or closest bound
+- added `ElementUtil.getMatchingStaticField()`
+- removed `ElementUtil.typeExists()` because it makes annotation processing not isolating
+
 Version 0.3.0 *(2016-09-09)*
 ----------------------------
 
