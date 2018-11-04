@@ -58,7 +58,7 @@ public class ElementUtilTest {
     @Test
     public void matchingMethodTests() {
         TypeElement element = elements.getTypeElement(MethodTestClass.class.getCanonicalName());
-        Set<ExecutableElement> methods = getLocalAndInheritedMethods(element, elements);
+        Set<ExecutableElement> methods = getLocalAndInheritedMethods(element, types, elements);
 
         // method a
         assertThat(ElementUtil.getMatchingAbstractMethod(methods, VOID).isPresent())

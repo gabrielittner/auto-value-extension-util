@@ -1,6 +1,5 @@
 package com.gabrielittner.auto.value.util;
 
-import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.AutoValueExtension;
 import com.google.auto.value.extension.AutoValueExtension.Context;
 import com.google.common.collect.Lists;
@@ -32,7 +31,8 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 public final class AutoValueUtil {
 
     /**
-     * Returns the {@link ClassName} of the class annotated with {@link AutoValue}.
+     * Returns the {@link ClassName} of the class annotated with
+     * {@link com.google.auto.value.AutoValue}.
      */
     public static ClassName getAutoValueClassClassName(Context context) {
         return ClassName.get(context.autoValueClass());

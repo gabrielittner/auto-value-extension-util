@@ -1,6 +1,7 @@
 import org.gradle.internal.jvm.Jvm
 
 apply plugin: 'java'
+apply plugin: 'com.vanniktech.maven.publish'
 
 sourceCompatibility = rootProject.ext.javaVersion
 targetCompatibility = rootProject.ext.javaVersion
@@ -16,7 +17,3 @@ dependencies {
     testCompile files(Jvm.current().getToolsJar())
     testCompile deps.jsr305
 }
-
-apply from: rootProject.file('gradle/mvn-push.gradle')
-
-
