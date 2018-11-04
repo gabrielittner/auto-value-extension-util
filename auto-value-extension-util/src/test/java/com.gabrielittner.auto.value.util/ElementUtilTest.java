@@ -220,14 +220,6 @@ public class ElementUtilTest {
         assertThat(ElementUtil.methodTakes(e, STRING, STRING)).isTrue();
     }
 
-    @Test
-    public void typeExists() {
-        ClassName testClassName = ClassName.get(AnnotationTestClass.class);
-        assertThat(ElementUtil.typeExists(elements, testClassName)).isTrue();
-        ClassName testClass2Name = testClassName.peerClass("TestClass2");
-        assertThat(ElementUtil.typeExists(elements, testClass2Name)).isFalse();
-    }
-
     @SuppressWarnings("unused")
     private static abstract class AnnotationTestClass {
         public abstract int a();
