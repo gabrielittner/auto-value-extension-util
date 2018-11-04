@@ -29,6 +29,24 @@ import javax.lang.model.util.Types;
 public final class ElementUtil {
 
     /**
+     * Returns a field of {@code cls} that is static and is of type {@code type}. Returns null
+     * if such a field doesn't exist.
+     */
+    public static Optional<Element> getMatchingStaticField(
+            TypeElement cls, TypeName type) {
+        for (Element element : cls.getEnclosedElements()) {
+            if (element.getKind() != ElementKind.FIELD) {
+                continue;
+            }
+            TypeName fieldType = TypeName.get(element.asType());
+            if (hasModifier(element, Modifier.STATIC) && fieldType.equals(type)) {
+                return Optional.of(element);
+            }
+        }
+        return Optional.absent();
+    }
+
+    /**
      * Returns a method of {@code cls} that is static, has {@code returns} as return type and the
      * number and types of parameters match {@code takes}. Returns null if such a method doesn't
      * exist.
@@ -69,8 +87,8 @@ public final class ElementUtil {
                 && methodReturns(method, returns);
     }
 
-    static boolean hasModifier(ExecutableElement method, Modifier modifier) {
-        return method.getModifiers().contains(modifier);
+    static boolean hasModifier(Element element, Modifier modifier) {
+        return element.getModifiers().contains(modifier);
     }
 
     static boolean methodTakes(ExecutableElement method, TypeName... takes) {
