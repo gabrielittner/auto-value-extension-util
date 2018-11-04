@@ -91,14 +91,6 @@ public final class ElementUtil {
     }
 
     /**
-     * Returns true if given {@code className} is on the current classpath.
-     */
-    public static boolean typeExists(Elements elements, ClassName className) {
-        String name = className.toString();
-        return elements.getTypeElement(name) != null;
-    }
-
-    /**
      * Returns true if the given {@code element} is annotated with an annotation named
      * {@code simpleName}.
      */
@@ -209,10 +201,10 @@ public final class ElementUtil {
     }
 
     private static class HierarchyElement {
-        private final TypeElement element;
-        private final TypeMirror superType;
+        final TypeElement element;
+        final TypeMirror superType;
 
-        private HierarchyElement(TypeElement element, TypeMirror superType) {
+        HierarchyElement(TypeElement element, TypeMirror superType) {
             this.element = element;
             this.superType = superType;
         }
