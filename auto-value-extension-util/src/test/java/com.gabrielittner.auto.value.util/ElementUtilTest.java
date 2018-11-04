@@ -21,6 +21,8 @@ import org.junit.Test;
 
 import static com.google.auto.common.MoreElements.getLocalAndInheritedMethods;
 import static com.google.common.truth.Truth.assertThat;
+import static com.squareup.javapoet.TypeName.DOUBLE;
+import static com.squareup.javapoet.TypeName.FLOAT;
 import static com.squareup.javapoet.TypeName.INT;
 import static com.squareup.javapoet.TypeName.VOID;
 import static java.lang.annotation.ElementType.FIELD;
@@ -40,6 +42,41 @@ public class ElementUtilTest {
     public void setUp() {
         this.elements = compilationRule.getElements();
         this.types = compilationRule.getTypes();
+    }
+
+    @SuppressWarnings("unused")
+    private static abstract class FieldTestClass {
+        static String a = "";
+        static int b = 0;
+        static double c = 0.0;
+        static FieldTestClass d = null;
+    }
+
+    @Test
+    public void matchingFieldTests() {
+        TypeElement element = elements.getTypeElement(FieldTestClass.class.getCanonicalName());
+
+        // method a
+        assertThat(ElementUtil.getMatchingStaticField(element, STRING).isPresent())
+                .isTrue();
+
+        assertThat(ElementUtil.getMatchingStaticField(element, INT).isPresent())
+                .isTrue();
+
+        assertThat(ElementUtil.getMatchingStaticField(element, DOUBLE).isPresent())
+                .isTrue();
+
+        assertThat(ElementUtil.getMatchingStaticField(element, ClassName.get(FieldTestClass.class)).isPresent())
+                .isTrue();
+
+        assertThat(ElementUtil.getMatchingStaticField(element, FLOAT).isPresent())
+                .isFalse();
+
+        assertThat(ElementUtil.getMatchingStaticField(element, VOID).isPresent())
+                .isFalse();
+
+        assertThat(ElementUtil.getMatchingStaticField(element, ClassName.get(MethodTestClass.class)).isPresent())
+                .isFalse();
     }
 
     @SuppressWarnings("unused")
