@@ -53,14 +53,14 @@ public class PropertyTest {
     }
 
     private abstract static class NonNullable {
-        public abstract String foo();
+        public abstract String bar();
     }
 
     @Test
     public void getsNonNullable() {
         TypeElement element = getElement(NonNullable.class);
         List<ExecutableElement> methods = methodsIn(elements.getAllMembers(element));
-        Property prop = new Property("foo", findFirst(methods, "foo"));
+        Property prop = new Property("foo", findFirst(methods, "bar"));
         assertThat(prop.nullable()).isFalse();
     }
 
