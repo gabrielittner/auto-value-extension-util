@@ -15,7 +15,7 @@ import org.junit.Test;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
 
-public class AutoValueCursorExtensionTest {
+public class AutoValueUtilTest {
 
     @Test
     public void simpleFinal() {
@@ -183,6 +183,36 @@ public class AutoValueCursorExtensionTest {
                 + "  }\n"
                 + "  Test.Inner test() {\n"
                 + "    return new AutoValue_Test_Inner(a(), b(), c());\n"
+                + "  }\n"
+                + "}\n");
+
+        assertAbout(javaSources())
+                .that(Collections.singletonList(source))
+                .processedWith(newProcessor(new CallConstructorExtension(), new FinalExtension()))
+                .compilesWithoutError()
+                .and()
+                .generatesSources(expected);
+    }
+
+    @Test
+    public void genericFinalClassConstructor() {
+        JavaFileObject source = JavaFileObjects.forSourceString("test.Test", ""
+                + "package test;\n"
+                + "import com.google.auto.value.AutoValue;\n"
+                + "@AutoValue public abstract class Test<X, Y, Z> {\n"
+                + "  public abstract X a();\n"
+                + "  public abstract Y b();\n"
+                + "  public abstract Z c();\n"
+                + "}\n");
+
+        JavaFileObject expected = JavaFileObjects.forSourceString("test/$AutoValue_Test", ""
+                + "package test;\n"
+                + "abstract class $AutoValue_Test<X, Y, Z> extends $$AutoValue_Test<X, Y, Z> {\n"
+                + "  $AutoValue_Test(X a, Y b, Z c) {\n"
+                + "    super(a, b, c);\n"
+                + "  }\n"
+                + "  Test<X, Y, Z> test() {\n"
+                + "    return new AutoValue_Test<>(a(), b(), c());\n"
                 + "  }\n"
                 + "}\n");
 

@@ -34,17 +34,23 @@ public final class AutoValueUtil {
      * Returns the {@link ClassName} of the class annotated with
      * {@link com.google.auto.value.AutoValue}.
      */
-    public static ClassName getAutoValueClassClassName(Context context) {
-        return ClassName.get(context.autoValueClass());
+    public static TypeName getAutoValueClassTypeName(Context context) {
+        TypeElement autoValueClass = context.autoValueClass();
+        ClassName autoValueClassName = ClassName.get(autoValueClass);
+        if (autoValueClass.getTypeParameters().size() > 0) {
+            TypeVariableName[] variables = getTypeVariables(autoValueClass);
+            return ParameterizedTypeName.get(autoValueClassName, variables);
+        }
+        return autoValueClassName;
     }
 
     private static String getFinalClassSimpleName(Context context) {
         TypeElement autoValueClass = context.autoValueClass();
-        String name = autoValueClass.getSimpleName().toString();
+        StringBuilder name = new StringBuilder(autoValueClass.getSimpleName().toString());
 
         Element enclosingElement = autoValueClass.getEnclosingElement();
         while (enclosingElement instanceof TypeElement) {
-            name = enclosingElement.getSimpleName().toString() + "_" + name;
+            name.insert(0, enclosingElement.getSimpleName().toString() + "_");
             enclosingElement = enclosingElement.getEnclosingElement();
         }
 
@@ -100,7 +106,7 @@ public final class AutoValueUtil {
             params.add(ParameterSpec.builder(typeName, entry.getKey()).build());
         }
 
-        CodeBlock code = newConstructorCall(CodeBlock.of("super"), properties.keySet().toArray());
+        CodeBlock code = addProperties(CodeBlock.builder().add("super"), properties.keySet().toArray());
 
         return MethodSpec.constructorBuilder().addParameters(params).addCode(code).build();
     }
@@ -112,20 +118,21 @@ public final class AutoValueUtil {
      * href="https://github.com/square/javapoet#n-for-names">JavaPoet Names</a>.
      */
     public static CodeBlock newFinalClassConstructorCall(Context context, Object[] properties) {
-        CodeBlock constructorName = CodeBlock.of("new $T", getFinalClassClassName(context));
-        return newConstructorCall(constructorName, properties);
+        CodeBlock.Builder callBuilder = CodeBlock.builder()
+                .add("new $T", getFinalClassClassName(context));
+        if (context.autoValueClass().getTypeParameters().size() > 0) {
+            callBuilder.add("<>");
+        }
+        return addProperties(callBuilder, properties);
     }
 
-    private static CodeBlock newConstructorCall(CodeBlock constructorName, Object[] properties) {
-        StringBuilder params = new StringBuilder("(");
-        for (int i = properties.length; i > 0; i--) {
-            params.append("$N");
-            if (i > 1) params.append(", ");
+    private static CodeBlock addProperties(CodeBlock.Builder callBuilder, Object[] properties) {
+        callBuilder.add("(");
+        for (int i = 0; i < properties.length; i++) {
+            if (i > 0) callBuilder.add(", ");
+            callBuilder.add("$N", properties[i]);
         }
-        params.append(")");
-        return CodeBlock.builder()
-                .add(constructorName)
-                .addStatement(params.toString(), properties)
+        return callBuilder.addStatement(")")
                 .build();
     }
 
