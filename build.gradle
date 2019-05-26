@@ -6,7 +6,7 @@ buildscript {
 
     dependencies {
         classpath 'com.vanniktech:gradle-maven-publish-plugin:0.6.0'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
     }
 }
 apply plugin: 'com.github.ben-manes.versions'
