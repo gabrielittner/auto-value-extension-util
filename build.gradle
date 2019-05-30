@@ -28,7 +28,7 @@ ext.deps = [
         auto_common: 'com.google.auto:auto-common:0.10',
 
         junit: 'junit:junit:4.12',
-        truth: 'com.google.truth:truth:0.44',
+        truth: 'com.google.truth:truth:0.45',
         compile_testing: 'com.google.testing.compile:compile-testing:0.17',
         jsr305: 'com.google.code.findbugs:jsr305:3.0.2'
 ]
