@@ -1,19 +1,19 @@
 import org.gradle.internal.jvm.Jvm
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'com.vanniktech.maven.publish'
 
 sourceCompatibility = rootProject.ext.javaVersion
 targetCompatibility = rootProject.ext.javaVersion
 
 dependencies {
-    compile deps.javapoet
-    compile deps.auto_value
-    compile deps.auto_common
+    api deps.javapoet
+    api deps.auto_value
+    implementation deps.auto_common
 
-    testCompile deps.junit
-    testCompile deps.truth
-    testCompile deps.compile_testing
-    testCompile files(Jvm.current().getToolsJar())
-    testCompile deps.jsr305
+    testImplementation deps.junit
+    testImplementation deps.truth
+    testImplementation deps.compile_testing
+    testImplementation files(Jvm.current().getToolsJar())
+    testImplementation deps.jsr305
 }
