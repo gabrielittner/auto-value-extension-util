@@ -81,6 +81,6 @@ public class PropertyTest {
         assertThat(prop.methodName()).isEqualTo("foo");
         assertThat(prop.humanName()).isEqualTo("foo");
         assertThat(prop.element()).isEqualTo(method);
-        assertThat(prop.annotations()).containsAllIn(Sets.newHashSet("Nullable"));
+        assertThat(prop.annotations()).containsAtLeastElementsIn(Sets.newHashSet("Nullable"));
     }
 }
